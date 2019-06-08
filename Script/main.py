@@ -279,7 +279,7 @@ class Main(tk.Frame):
         f = plt.Figure()
         prev_dx = 0
         for dx in [1861, 2000]:
-            data = work.data[(prev_dx <= work.data['Founded']) & (work.data['Founded'] < dx)]
+            data = work.suffer[(prev_dx <= work.suffer['Founded']) & (work.suffer['Founded'] < dx)]
             sub = f.add_subplot(1, 2, dx > 1861 and 2 or 1)
             sub.scatter(
                 data['Founded'],
@@ -316,7 +316,7 @@ class Main(tk.Frame):
         }
         xticks = [], []
         for dx in [1861, 2000]:
-            data = work.data[(prev_dx <= work.data['Founded']) & (work.data['Founded'] < dx)]\
+            data = work.suffer[(prev_dx <= work.suffer['Founded']) & (work.suffer['Founded'] < dx)]\
                 .sort_values('Population', ascending=False)
             sub.bar(
                 [x + add[dx] for x in range(data.index.size)],

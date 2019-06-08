@@ -22,9 +22,18 @@ def get_records():
 
 
 def _save_dataframe():
-    data.iloc[:, :4].to_csv(path_one, index=False)
+    # data.iloc[:, :4].to_csv(path_one, index=False)
     suffer[['Key', 'Federal_subject', 'Population_area']].drop_duplicates(subset=['Key'],
                                                                           keep='first').to_csv(path_second, index=False)
+    suffer[['Key', 'Town', 'Founded', 'Population']]\
+        .drop_duplicates(
+            subset=['Town'],
+            keep='first'
+        )\
+        .to_csv(
+            path_one,
+            index=False
+        )
 
 
 def insert_record(record):
