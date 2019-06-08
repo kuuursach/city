@@ -22,18 +22,9 @@ def get_records():
 
 
 def _save_dataframe():
-    # data.iloc[:, :4].to_csv(path_one, index=False)
+    suffer.iloc[:, :4].to_csv(path_one, index=False)
     suffer[['Key', 'Federal_subject', 'Population_area']].drop_duplicates(subset=['Key'],
                                                                           keep='first').to_csv(path_second, index=False)
-    suffer[['Key', 'Town', 'Founded', 'Population']]\
-        .drop_duplicates(
-            subset=['Town'],
-            keep='first'
-        )\
-        .to_csv(
-            path_one,
-            index=False
-        )
 
 
 def insert_record(record):
@@ -56,15 +47,37 @@ def insert_record(record):
         except IndexError:
             record['Key'] = suffer['Key'][pd.Series(suffer['Key']).idxmax()] + 1
             suffer = suffer.append(record, ignore_index=True)
-    #_save_dataframe()
 
 
 def delete_record(index):
     global suffer
     suffer = suffer.drop(index).reset_index(drop=True)
-   # _save_dataframe()
 
 
 def update_record(index, record_list):
     data.iloc[index] = record_list
-#    _save_dataframe()
+
+
+def research():
+    zero = suffer['Town'][pd.Series(suffer['Founded']).idxmax()]
+    one = suffer.Founded.max()
+    two = suffer['Town'][pd.Series(suffer['Founded']).idxmin()]
+    three = suffer.Founded.min()
+    four = suffer['Federal_subject'][pd.Series(suffer['Population_area']).idxmax()]
+    five = suffer.Population_area.max()
+    six = suffer['Federal_subject'][pd.Series(suffer['Population_area']).idxmin()]
+    seven = suffer.Population_area.min()
+    eight = suffer['Federal_subject'][pd.Series(suffer['Population']).idxmax()]
+    nine = suffer.Population.max()
+    ten = suffer['Federal_subject'][pd.Series(suffer['Population']).idxmin()]
+    eleven = suffer.Population.min()
+
+    pulpy = """
+    Самый молодой город : {0}, основан: {1}
+    Самый древний город: {2}, основан: {3} 
+    Самая многонаселенная область: {4}, численность: {5} 
+    Самая малонаселенная область: {6}, численность: {7}
+    Самый многонаселенный город: {8}, численность: {9}
+    Самый малонаселенный город: {10}, численность: {11}"""
+    pulpy = pulpy.format(zero, one, two, three, four, five, six, seven, eight, nine, ten, eleven)
+    return pulpy

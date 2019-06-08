@@ -1,40 +1,35 @@
-import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from tkinter import filedialog
 from Script import config as cg
 from Library import work
 from Library import invalid
-from tkinter import Entry
+import os
 
 import matplotlib.pyplot as plt
 
-
 import matplotlib
+
 matplotlib.use("TkAgg")
 
-from matplotlib.backends.backend_tkagg import FigureCanvasAgg, NavigationToolbar2Tk, FigureCanvasTkAgg
-from matplotlib.figure import Figure
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class Main(tk.Frame):
     def __init__(self, root):
         super().__init__(root)
 
-        self.add_img_modify = tk.PhotoImage(file="../Graphics/add2.png")
-        self.add_img_cancel = tk.PhotoImage(file="../Graphics/add1.png")
-        self.add_img = tk.PhotoImage(file="../Graphics/add.png")
-        self.save_img = tk.PhotoImage(file="../Graphics/save.png")
-        self.graph_img = tk.PhotoImage(file="../Graphics/graph.png")
-        self.search_img = tk.PhotoImage(file="../Graphics/search.png")
+        self.add_img_modify = tk.PhotoImage(file=cg.modify)
+        self.add_img_cancel = tk.PhotoImage(file=cg.delete)
+        self.add_img = tk.PhotoImage(file=cg.add)
+        self.save_img = tk.PhotoImage(file=cg.save)
+        self.graph_img = tk.PhotoImage(file=cg.graph)
+        self.search_img = tk.PhotoImage(file=cg.search)
 
         self.set_frame(root).pack(anchor='n')
         self.tree = self.init_main(root)
         self.tree.pack()
         self.fill_on_start()
-        # self.find()
 
     def init_main(self, root):
         tree = ttk.Treeview(root, height=30, show='headings')
@@ -57,25 +52,25 @@ class Main(tk.Frame):
         return tree
 
     def set_frame(self, root):
-        toolbar = tk.Frame(bg='#d7d8e0', bd=2)
+        toolbar = tk.Frame(bg=cg.all_color, bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
 
-        btn_open_dialog_cancel = tk.Button(toolbar, text='Удалить', command=self.delete_item, bg='#d7d8e0', bd=0,
+        btn_open_dialog_cancel = tk.Button(toolbar, text='Удалить', command=self.delete_item, bg=cg.all_color, bd=0,
                                            compound=tk.TOP, image=self.add_img_cancel)
 
-        btn_open_dialog = tk.Button(toolbar, text='Добавить позицию', command=self.change_town, bg='#d7d8e0', bd=0,
+        btn_open_dialog = tk.Button(toolbar, text='Добавить позицию', command=self.change_town, bg=cg.all_color, bd=0,
                                     compound=tk.TOP, image=self.add_img)
 
-        btn_open_dialog_modify = tk.Button(toolbar, text='Изменить', command=self.change_town, bg='#d7d8e0', bd=0,
+        btn_open_dialog_modify = tk.Button(toolbar, text='Изменить', command=self.change_town, bg=cg.all_color, bd=0,
                                            compound=tk.TOP, image=self.add_img_modify)
 
-        btn_open_dialog_save = tk.Button(toolbar, text='Сохранить', bg='#d7d8e0', command=self.save, bd=0,
+        btn_open_dialog_save = tk.Button(toolbar, text='Сохранить', bg=cg.all_color, command=self.save, bd=0,
                                          compound=tk.TOP, image=self.save_img)
 
-        btn_open_dialog_graph = tk.Button(toolbar, text='Графики', bg='#d7d8e0', command=self.graph_selector, bd=0,
+        btn_open_dialog_graph = tk.Button(toolbar, text='Графики', bg=cg.all_color, command=self.graph_selector, bd=0,
                                           compound=tk.TOP, image=self.graph_img)
 
-        btn_open_dialog_search = tk.Button(toolbar, text='Поиск', bg='#d7d8e0', command=self.graph_selector, bd=0,
+        btn_open_dialog_search = tk.Button(toolbar, text='Поиск', bg=cg.all_color, command=self.search_town, bd=0,
                                            compound=tk.TOP, image=self.search_img)
 
         btn_open_dialog.pack(side=tk.LEFT)
@@ -94,7 +89,7 @@ class Main(tk.Frame):
     def change_town(self):
         top = tk.Toplevel()
         top.title('Изменить/добавить город')
-        top.geometry('520x280+400+300')
+        top.geometry(cg.change_geometry)
         top.resizable(False, False)
 
         label_town = tk.Label(top, text='Город:')
@@ -154,36 +149,19 @@ class Main(tk.Frame):
         print(values)
         entries_list = [entry_town, entry_founded, entry_population, entry_federal, entry_population_area]
         for entry, val in zip(entries_list, values):
-            # entry.delete(0, tk.END)
-            # print(entry.delete(0, tk.END))
             entry.insert(0, val)
-        # print(val)
 
     def change_item(self, entry_town, entry_founded, entry_population, entry_federal, entry_population_area, tree):
         try:
 
             item = tree.focus()
             index = tree.index(item)
-            # values = tree.item(item)["values"]
-            # print(values)
-            # entries_list = [entry_town, entry_federal, entry_founded, entry_population, entry_area]
-            # for entry, val in zip(entries_list, values):
-            #     entry.delete(0, tk.END)
-            #     entry.insert(0, val)
-
-            print(item)
-            print(index)
 
             town = invalid.invalid_text(entry_town.get())
-            print(town)
             founded = invalid.invalid_number(entry_founded.get())
-            print(founded)
             population = invalid.invalid_number(entry_population.get())
-            print(population)
             federal = invalid.invalid_text(entry_federal.get())
-            print(federal)
             population_area = invalid.invalid_number(entry_population_area.get())
-            print(population_area)
 
             work.insert_record({
                 "Town": town,
@@ -192,7 +170,6 @@ class Main(tk.Frame):
                 "Federal_subject": federal,
                 "Population_area": population_area
             })
-            # work.update_record(index, (town, federal, founded, population, area))
             tree.item(item, values=(town, founded, population, federal, population_area))
 
             messagebox.showinfo(title='Успешно', message='Successful!!')
@@ -354,7 +331,7 @@ class Main(tk.Frame):
         }
         xticks = [], []
         for dx in [1861, 2000]:
-            data = work.suffer[(prev_dx <= work.suffer['Founded']) & (work.suffer['Founded'] < dx)]\
+            data = work.suffer[(prev_dx <= work.suffer['Founded']) & (work.suffer['Founded'] < dx)] \
                 .sort_values('Population', ascending=False)
             sub.bar(
                 [x + add[dx] for x in range(data.index.size)],
@@ -378,6 +355,28 @@ class Main(tk.Frame):
         save_button = tk.Button(graph, text='Save to file', command=lambda: self.save_graph(f))
         save_button.pack(side='top')
 
+    def save_file(self, poetry):
+        f = open(cg.save_report, 'w')
+        f.write(poetry)
+
+    def search_town(self):
+        graph = tk.Toplevel()
+        graph.title('Анализатор')
+        graph.geometry(cg.change_geometry)
+        graph.resizable(False, False)
+
+        poetry = work.research()
+        label2 = tk.Label(graph, text=poetry, justify=tk.LEFT)
+        label2.place(relx=.2, rely=.3)
+
+        btn_cancel = ttk.Button(graph, text='Закрыть', command=graph.destroy)
+        btn_cancel.place(x=300, y=210)
+
+        btn_save = ttk.Button(graph, text='Save me!')
+        btn_save.place(x=220, y=210)
+        btn_save.bind('<Button-1>', lambda event: self.save_file(poetry))
+
+
 def main():
     work.load_dataframe(cg.db_plays_path, cg.db_plays_path1)
 
@@ -388,6 +387,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Города России")
-    root.geometry("950x550+300+150")
+    root.geometry(cg.start_geometry)
     root.resizable(False, False)
     root.mainloop()
