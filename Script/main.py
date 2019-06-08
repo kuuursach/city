@@ -70,11 +70,11 @@ class Main(tk.Frame):
         btn_open_dialog_save = tk.Button(toolbar, text='Сохранить', bg='#d7d8e0', command=self.save, bd=0,
                                          compound=tk.TOP, image=self.save_img)
 
-        btn_open_dialog_graph = tk.Button(toolbar, text='Графики', bg='#d7d8e0', command=self.graph_town, bd=0,
+        btn_open_dialog_graph = tk.Button(toolbar, text='Графики', bg='#d7d8e0', command=self.graph_selector, bd=0,
                                           compound=tk.TOP, image=self.graph_img)
 
-        btn_open_dialog_search = tk.Button(toolbar, text='Поиск', bg='#d7d8e0', command=self.graph_town, bd=0,
-                                           compound=tk.TOP, image=self.search_img)
+        #btn_open_dialog_search = tk.Button(toolbar, text='Поиск', bg='#d7d8e0', command=self.graph_town, bd=0,
+        #                                   compound=tk.TOP, image=self.search_img)
 
         btn_open_dialog.pack(side=tk.LEFT)
 
@@ -82,7 +82,7 @@ class Main(tk.Frame):
         btn_open_dialog_modify.pack(side=tk.LEFT)
         btn_open_dialog_save.pack(side=tk.LEFT)
         btn_open_dialog_graph.pack(side=tk.LEFT)
-        btn_open_dialog_search.pack(side=tk.LEFT)
+        #btn_open_dialog_search.pack(side=tk.LEFT)
 
         return toolbar
 
@@ -224,20 +224,45 @@ class Main(tk.Frame):
         except ValueError:
             messagebox.showerror("Invalid input", "Input are not valid string or number")
 
-    def graph_town(self):
+    def graph_selector(self):
+        popup = tk.Toplevel()
+        popup.title('Выбор типа графика')
+        popup.geometry('400x250')
+        button_town_by_foundation = tk.Button(
+            popup,
+            text='Население городов с группировкой по дате основания',
+            command=lambda: self.graph_town_by_foundation()
+        )
+        button_town_by_foundation.pack()
+        button_not_implemented = tk.Button(
+            popup,
+            text='Not implemented',
+            command=lambda: print('Not implemented')
+        )
+        button_not_implemented.pack()
 
+    def graph_town_by_foundation(self):
         graph = tk.Toplevel()
-        graph.title('Графики')
-        graph.geometry('520x280+400+300')
+        graph.title('Население городов с группировкой по дате основания')
+        graph.geometry('1366x768')
         graph.resizable(False, False)
 
-        x = list(work.suffer.Town)
-        y = list(work.suffer.Population)
-        print(x,y)
-
-        f = Figure()
-        a = f.add_subplot(111)
-        a.plot(x, y)
+        f = plt.Figure()
+        for dx in range(1000, 2000, 100):
+            data = work.data[(dx <= work.data['Founded']) & (work.data['Founded'] < dx + 100)]
+            sub = f.add_subplot(1, 10, (dx - 1000) // 100 + 1)
+            sub.bar(
+                [town[0] for town in data['Town']],
+                data['Population']
+            )
+            sub.set_ylim(top=1.3e7)
+            sub.set_yticks(range(0, int(1.3e7), int(5e5)))
+            sub.set_yticklabels([])
+            sub.yaxis.grid(True)
+            sub.set_xticklabels(data['Town'], rotation='vertical')
+            sub.title.set_text('{}-{}'.format(dx, dx + 99))
+        f.get_axes()[0].set_yticklabels(range(0, int(1.3e7), int(5e5)))
+        f.subplots_adjust(bottom=0.2)
 
         canvas = FigureCanvasTkAgg(f, graph)
         canvas.draw()
