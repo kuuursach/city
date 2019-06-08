@@ -228,12 +228,18 @@ class Main(tk.Frame):
         popup = tk.Toplevel()
         popup.title('Выбор типа графика')
         popup.geometry('400x250')
-        button_town_by_foundation = tk.Button(
+        button_task1 = tk.Button(
             popup,
-            text='Население городов с группировкой по дате основания',
-            command=lambda: self.graph_town_by_foundation()
+            text='Кластеризованная столбчатая диаграмма',
+            command=lambda: self.graph_town_task1()
         )
-        button_town_by_foundation.pack()
+        button_task1.pack()
+        button_task4 = tk.Button(
+            popup,
+            text='Категоризированная диаграмма рассеивания',
+            command=lambda: self.graph_town_task4()
+        )
+        button_task4.pack()
         button_not_implemented = tk.Button(
             popup,
             text='Not implemented',
@@ -241,79 +247,76 @@ class Main(tk.Frame):
         )
         button_not_implemented.pack()
 
-    def graph_town_by_foundation(self):
+    def graph_town_task4(self):
         graph = tk.Toplevel()
-        graph.title('Население городов с группировкой по дате основания')
+        graph.title('Население городов, по убыванию')
         graph.geometry('1366x768')
         graph.resizable(False, False)
 
         f = plt.Figure()
-        for dx in range(1000, 2000, 100):
-            data = work.data[(dx <= work.data['Founded']) & (work.data['Founded'] < dx + 100)]
-            sub = f.add_subplot(1, 10, (dx - 1000) // 100 + 1)
-            sub.bar(
-                [town[0] for town in data['Town']],
+        prev_dx = 0
+        for dx in [1861, 2000]:
+            data = work.data[(prev_dx <= work.data['Founded']) & (work.data['Founded'] < dx)]
+            sub = f.add_subplot(1, 2, dx > 1861 and 2 or 1)
+            sub.scatter(
+                data['Founded'],
                 data['Population']
             )
             sub.set_ylim(top=1.3e7)
             sub.set_yticks(range(0, int(1.3e7), int(5e5)))
             sub.set_yticklabels([])
             sub.yaxis.grid(True)
-            sub.set_xticklabels(data['Town'], rotation='vertical')
-            sub.title.set_text('{}-{}'.format(dx, dx + 99))
+            # sub.set_xticklabels(data['Town'], rotation='vertical')
+            prev_dx = dx
+
+        f.get_axes()[0].title.set_text('До отмены крепостного права')
+        f.get_axes()[1].title.set_text('После отмены крепостного права')
         f.get_axes()[0].set_yticklabels(range(0, int(1.3e7), int(5e5)))
-        f.subplots_adjust(bottom=0.2)
 
         canvas = FigureCanvasTkAgg(f, graph)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        # canvas.get_tk_widget().grid(row=0, column=0)
-        # canvas.get_tk_widget().grid_forget()
+    def graph_town_task1(self):
+        graph = tk.Toplevel()
+        graph.title('Население городов с группировкой по дате основания')
+        graph.geometry('1366x768')
+        graph.resizable(False, False)
 
-
-
-        #
-        # label_town = tk.Label(graph, text='Город:')
-        # label_town.place(x=50, y=50)
-        # entry_town = ttk.Entry(graph)
-        # entry_town.place(x=200, y=50)
-        #
-        # label_founded = tk.Label(graph, text='Год основания:')
-        # label_founded.place(x=50, y=80)
-        # entry_founded = ttk.Entry(graph)
-        # entry_founded.place(x=200, y=80)
-        #
-        # label_population = tk.Label(graph, text='Население:')
-        # label_population.place(x=50, y=110)
-        # entry_population = ttk.Entry(graph)
-        # entry_population.place(x=200, y=110)
-        #
-        # label_federal = tk.Label(graph, text='Субъект РФ:')
-        # label_federal.place(x=50, y=140)
-        # entry_federal = ttk.Entry(graph)
-        # entry_federal.place(x=200, y=140)
-        #
-        # label_population_area = tk.Label(graph, text='Население_области:')
-        # label_population_area.place(x=50, y=170)
-        # entry_population_area = ttk.Entry(graph)
-        # entry_population_area.place(x=200, y=170)
-        #
-        # btn_cancel = ttk.Button(graph, text='Закрыть', command=graph.destroy)
-        # btn_cancel.place(x=300, y=210)
-        #
-        # btn_ok = ttk.Button(graph, text='Изменить')
-        # btn_ok.place(x=220, y=210)
-        # btn_ok.bind('<Button-1>', lambda event: self.change_item(entry_town, entry_founded, entry_population,
-        #                                                          entry_federal, entry_population_area, self.tree))
-        # btn_ok = ttk.Button(graph, text='Добавить')
-        # btn_ok.place(x=140, y=210)
-        # btn_ok.bind('<Button-1>', lambda event: self.add_item(entry_town, entry_founded, entry_population,
-        #                                                       entry_federal, entry_population_area))
-        #
-        # graph.grab_set()
-        # graph.focus_set()
-
+        f = plt.Figure()
+        sub = f.add_subplot(1, 1, 1)
+        prev_dx = 0
+        colors = {
+            1861: 'blue',
+            2000: 'red'
+        }
+        add = {
+            1861: 0.05,
+            2000: 0.35
+        }
+        xticks = [], []
+        for dx in [1861, 2000]:
+            data = work.data[(prev_dx <= work.data['Founded']) & (work.data['Founded'] < dx)]\
+                .sort_values('Population', ascending=False)
+            sub.bar(
+                [x + add[dx] for x in range(data.index.size)],
+                data['Population'],
+                width=0.2,
+                label='{} отмены крепостного права'.format(dx == 1861 and 'До' or 'После')
+            )
+            xticks[0].extend([x + add[dx] for x in range(data.index.size)])
+            xticks[1].extend(data['Town'])
+            sub.set_ylim(top=1.3e7)
+            sub.set_yticks(range(0, int(1.3e7), int(5e5)))
+            sub.yaxis.grid(True)
+            prev_dx = dx
+        sub.set_xticks(xticks[0])
+        sub.set_xticklabels(xticks[1], rotation='vertical')
+        sub.legend(loc='upper right')
+        f.subplots_adjust(bottom=0.2)
+        canvas = FigureCanvasTkAgg(f, graph)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 def main():
     work.load_dataframe(cg.db_plays_path, cg.db_plays_path1)
