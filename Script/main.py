@@ -1,6 +1,8 @@
+import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 from Script import config as cg
 from Library import work
 from Library import invalid
@@ -73,8 +75,8 @@ class Main(tk.Frame):
         btn_open_dialog_graph = tk.Button(toolbar, text='Графики', bg='#d7d8e0', command=self.graph_selector, bd=0,
                                           compound=tk.TOP, image=self.graph_img)
 
-        #btn_open_dialog_search = tk.Button(toolbar, text='Поиск', bg='#d7d8e0', command=self.graph_town, bd=0,
-        #                                   compound=tk.TOP, image=self.search_img)
+        btn_open_dialog_search = tk.Button(toolbar, text='Поиск', bg='#d7d8e0', command=self.graph_selector, bd=0,
+                                           compound=tk.TOP, image=self.search_img)
 
         btn_open_dialog.pack(side=tk.LEFT)
 
@@ -82,7 +84,7 @@ class Main(tk.Frame):
         btn_open_dialog_modify.pack(side=tk.LEFT)
         btn_open_dialog_save.pack(side=tk.LEFT)
         btn_open_dialog_graph.pack(side=tk.LEFT)
-        #btn_open_dialog_search.pack(side=tk.LEFT)
+        btn_open_dialog_search.pack(side=tk.LEFT)
 
         return toolbar
 
@@ -247,6 +249,27 @@ class Main(tk.Frame):
         )
         button_not_implemented.pack()
 
+    def save_graph(self, graph: plt.Figure):
+        filename = tk.filedialog.asksaveasfilename(
+            filetypes=[
+                ('PDF', '*.pdf'),
+                ('PNG', '*.png'),
+                ('All files', '*.*')
+            ]
+        )
+        do_continue = True
+        if os.path.exists(filename):
+            do_continue = tk.messagebox.askokcancel(message='Файл существует, заменить?')
+            if not do_continue:
+                os.remove(filename)
+        if do_continue:
+            try:
+                graph.savefig(filename)
+            except Exception as e:
+                tk.messagebox.showerror(message='Exception: {}'.format(e))
+            else:
+                tk.messagebox.showinfo(message='Plot saved as {}'.format(filename))
+
     def graph_town_task4(self):
         graph = tk.Toplevel()
         graph.title('Население городов, по убыванию')
@@ -266,7 +289,6 @@ class Main(tk.Frame):
             sub.set_yticks(range(0, int(1.3e7), int(5e5)))
             sub.set_yticklabels([])
             sub.yaxis.grid(True)
-            # sub.set_xticklabels(data['Town'], rotation='vertical')
             prev_dx = dx
 
         f.get_axes()[0].title.set_text('До отмены крепостного права')
@@ -276,6 +298,8 @@ class Main(tk.Frame):
         canvas = FigureCanvasTkAgg(f, graph)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        save_button = tk.Button(graph, text='Save to file', command=lambda: self.save_graph(f))
+        save_button.pack(side='top')
 
     def graph_town_task1(self):
         graph = tk.Toplevel()
@@ -286,10 +310,6 @@ class Main(tk.Frame):
         f = plt.Figure()
         sub = f.add_subplot(1, 1, 1)
         prev_dx = 0
-        colors = {
-            1861: 'blue',
-            2000: 'red'
-        }
         add = {
             1861: 0.05,
             2000: 0.35
@@ -317,6 +337,8 @@ class Main(tk.Frame):
         canvas = FigureCanvasTkAgg(f, graph)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        save_button = tk.Button(graph, text='Save to file', command=lambda: self.save_graph(f))
+        save_button.pack(side='top')
 
 def main():
     work.load_dataframe(cg.db_plays_path, cg.db_plays_path1)
