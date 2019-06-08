@@ -236,6 +236,12 @@ class Main(tk.Frame):
             command=lambda: self.graph_town_task1()
         )
         button_task1.pack()
+        button_task2 = tk.Button(
+            popup,
+            text='Категоризированная гистограмма',
+            command=lambda: self.graph_town_task2()
+        )
+        button_task2.pack()
         button_task4 = tk.Button(
             popup,
             text='Категоризированная диаграмма рассеивания',
@@ -294,6 +300,38 @@ class Main(tk.Frame):
         f.get_axes()[0].title.set_text('До отмены крепостного права')
         f.get_axes()[1].title.set_text('После отмены крепостного права')
         f.get_axes()[0].set_yticklabels(range(0, int(1.3e7), int(5e5)))
+
+        canvas = FigureCanvasTkAgg(f, graph)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        save_button = tk.Button(graph, text='Save to file', command=lambda: self.save_graph(f))
+        save_button.pack(side='top')
+
+    def graph_town_task2(self):
+        graph = tk.Toplevel()
+        graph.title('Число городов в регионе по году основания с группировкой по региону')
+        graph.geometry('1366x768')
+        graph.resizable(False, False)
+
+        f = plt.Figure()
+        regions = [
+            'Nizhny_Novgorod_Oblast',
+            'Chelyabinsk_Oblast',
+            'Irkutsk_Oblast',
+            'Samara_Oblast',
+            'Sverdlovsk_Oblast'
+        ]
+        for idx, region in enumerate(regions):
+            data = work.suffer[work.suffer['Federal_subject'] == region]
+            print(data)
+            sub = f.add_subplot(1, len(regions), idx + 1)
+            sub.hist(
+                data['Founded'],
+                bins=list(range(1000, 2200, 200))
+            )
+            sub.title.set_text(region)
+            sub.set_yticks(range(5))
+        # f.get_axes()[0].set_yticklabels(range(0, int(1.3e7), int(5e5)))
 
         canvas = FigureCanvasTkAgg(f, graph)
         canvas.draw()
