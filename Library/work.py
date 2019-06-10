@@ -21,7 +21,7 @@ def get_records():
     return [el[1:] for el in suffer.iloc[:, 1:].itertuples()]
 
 
-def _save_dataframe():
+def save_dataframe():
     suffer.iloc[:, :4].to_csv(path_one, index=False)
     suffer[['Key', 'Federal_subject', 'Population_area']].drop_duplicates(subset=['Key'],
                                                                           keep='first').to_csv(path_second, index=False)
@@ -81,3 +81,18 @@ def research():
     Самый малонаселенный город: {10}, численность: {11}"""
     pulpy = pulpy.format(zero, one, two, three, four, five, six, seven, eight, nine, ten, eleven)
     return pulpy
+
+
+def invalid_number(number):
+    if not number:
+        raise ValueError
+    res = int(number)
+    if res < 0:
+        raise ValueError
+    return res
+
+
+def invalid_text(text: str):
+    if "," in text:
+        raise ValueError
+    return text.strip()

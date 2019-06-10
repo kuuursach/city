@@ -1,18 +1,18 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
-from Script import config as cg
-from Library import work
-from Library import invalid
 import os
-
-import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
+import tkinter.filedialog as fd
 
 import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+import Library.work as wrk
+# from Library import wrk
+from Script import config as cg
 
 matplotlib.use("TkAgg")
-
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class Main(tk.Frame):
@@ -26,13 +26,13 @@ class Main(tk.Frame):
         self.graph_img = tk.PhotoImage(file=cg.graph)
         self.search_img = tk.PhotoImage(file=cg.search)
 
-        self.set_frame(root).pack(anchor='n')
+        self.set_frame().pack(anchor='n')
         self.tree = self.init_main(root)
         self.tree.pack()
         self.fill_on_start()
 
-    def init_main(self, root):
-        tree = ttk.Treeview(root, height=30, show='headings')
+    def init_main(self, int_root):
+        tree = ttk.Treeview(int_root, height=30, show='headings')
         tree['columns'] = ('Town', 'Founded', 'Population', 'Federal_subject', 'Population_area')
 
         tree.column("Town", width=200, anchor=tk.CENTER)
@@ -51,7 +51,7 @@ class Main(tk.Frame):
 
         return tree
 
-    def set_frame(self, root):
+    def set_frame(self):
         toolbar = tk.Frame(bg=cg.all_color, bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
 
@@ -64,6 +64,7 @@ class Main(tk.Frame):
         btn_open_dialog_modify = tk.Button(toolbar, text='Изменить', command=self.change_town, bg=cg.all_color, bd=0,
                                            compound=tk.TOP, image=self.add_img_modify)
 
+        # TODO тут хз зачем было в отдельную функцию save выносить, в принципе можно было прям тут вызвать из wrk
         btn_open_dialog_save = tk.Button(toolbar, text='Сохранить', bg=cg.all_color, command=self.save, bd=0,
                                          compound=tk.TOP, image=self.save_img)
 
@@ -84,7 +85,7 @@ class Main(tk.Frame):
         return toolbar
 
     def save(self):
-        work._save_dataframe()
+        wrk.save_dataframe()
 
     def change_town(self):
         top = tk.Toplevel()
@@ -135,13 +136,13 @@ class Main(tk.Frame):
         top.focus_set()
 
     def fill_on_start(self):
-        for row in work.get_records():
+        for row in wrk.get_records():
             self.tree.insert("", tk.END, values=row)
 
     def delete_item(self):
         item = self.tree.focus()
         print(item)
-        work.delete_record(self.tree.index(item))
+        wrk.delete_record(self.tree.index(item))
         self.tree.delete(item)
 
     def find(self, entry_town, entry_founded, entry_population, entry_federal, entry_population_area, tree):
@@ -157,13 +158,13 @@ class Main(tk.Frame):
             item = tree.focus()
             index = tree.index(item)
 
-            town = invalid.invalid_text(entry_town.get())
-            founded = invalid.invalid_number(entry_founded.get())
-            population = invalid.invalid_number(entry_population.get())
-            federal = invalid.invalid_text(entry_federal.get())
-            population_area = invalid.invalid_number(entry_population_area.get())
+            town = wrk.invalid_text(entry_town.get())
+            founded = wrk.invalid_number(entry_founded.get())
+            population = wrk.invalid_number(entry_population.get())
+            federal = wrk.invalid_text(entry_federal.get())
+            population_area = wrk.invalid_number(entry_population_area.get())
 
-            work.insert_record({
+            wrk.insert_record({
                 "Town": town,
                 "Founded": founded,
                 "Population": population,
@@ -179,18 +180,18 @@ class Main(tk.Frame):
     def add_item(self, entry_town, entry_founded, entry_population, entry_federal, entry_population_area):
         try:
 
-            town = invalid.invalid_text(entry_town.get())
+            town = wrk.invalid_text(entry_town.get())
             print(town)
-            founded = invalid.invalid_number(entry_founded.get())
+            founded = wrk.invalid_number(entry_founded.get())
             print(founded)
-            population = invalid.invalid_number(entry_population.get())
+            population = wrk.invalid_number(entry_population.get())
             print(population)
-            federal = invalid.invalid_text(entry_federal.get())
+            federal = wrk.invalid_text(entry_federal.get())
             print(federal)
-            population_area = invalid.invalid_number(entry_population_area.get())
+            population_area = wrk.invalid_number(entry_population_area.get())
             print(population_area)
 
-            work.insert_record({
+            wrk.insert_record({
                 "Town": town,
                 "Founded": founded,
                 "Population": population,
@@ -233,7 +234,7 @@ class Main(tk.Frame):
         button_not_implemented.pack()
 
     def save_graph(self, graph: plt.Figure):
-        filename = tk.filedialog.asksaveasfilename(
+        filename = fd.asksaveasfilename(
             filetypes=[
                 ('PDF', '*.pdf'),
                 ('PNG', '*.png'),
@@ -262,7 +263,7 @@ class Main(tk.Frame):
         f = plt.Figure()
         prev_dx = 0
         for dx in [1861, 2000]:
-            data = work.suffer[(prev_dx <= work.suffer['Founded']) & (work.suffer['Founded'] < dx)]
+            data = wrk.suffer[(prev_dx <= wrk.suffer['Founded']) & (wrk.suffer['Founded'] < dx)]
             sub = f.add_subplot(1, 2, dx > 1861 and 2 or 1)
             sub.scatter(
                 data['Founded'],
@@ -299,7 +300,7 @@ class Main(tk.Frame):
             'Sverdlovsk_Oblast'
         ]
         for idx, region in enumerate(regions):
-            data = work.suffer[work.suffer['Federal_subject'] == region]
+            data = wrk.suffer[wrk.suffer['Federal_subject'] == region]
             print(data)
             sub = f.add_subplot(1, len(regions), idx + 1)
             sub.hist(
@@ -331,7 +332,7 @@ class Main(tk.Frame):
         }
         xticks = [], []
         for dx in [1861, 2000]:
-            data = work.suffer[(prev_dx <= work.suffer['Founded']) & (work.suffer['Founded'] < dx)] \
+            data = wrk.suffer[(prev_dx <= wrk.suffer['Founded']) & (wrk.suffer['Founded'] < dx)] \
                 .sort_values('Population', ascending=False)
             sub.bar(
                 [x + add[dx] for x in range(data.index.size)],
@@ -365,7 +366,7 @@ class Main(tk.Frame):
         graph.geometry(cg.change_geometry)
         graph.resizable(False, False)
 
-        poetry = work.research()
+        poetry = wrk.research()
         label2 = tk.Label(graph, text=poetry, justify=tk.LEFT)
         label2.place(relx=.2, rely=.3)
 
@@ -375,10 +376,11 @@ class Main(tk.Frame):
         btn_save = ttk.Button(graph, text='Save me!')
         btn_save.place(x=220, y=210)
         btn_save.bind('<Button-1>', lambda event: self.save_file(poetry))
+        # TODO вместо функции можно написать lambda x: with open(cg.save_report, 'w') as f: f.write(poetry)
 
 
-def main():
-    work.load_dataframe(cg.db_plays_path, cg.db_plays_path1)
+def main(): #TODO Это можно поместить в __init__ класса, он все равно один раз запускается.
+    wrk.load_dataframe(cg.db_plays_path, cg.db_plays_path1)
 
 
 if __name__ == "__main__":
